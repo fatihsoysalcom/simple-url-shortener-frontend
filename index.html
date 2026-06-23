@@ -1,0 +1,89 @@
+<html>
+<head>
+    <title>URL Kısaltıcı</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        .result, .error { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .result { background-color: #e7f3fe; border: 1px solid #b3d7f9; color: #31708f; }
+        .error { background-color: #f2dede; border: 1px solid #ebccd1; color: #a94442; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Kısaltıcı</h1>
+        
+        <form id="shortenForm">
+            <div>
+                <label for="originalUrl">Uzun URL:</label>
+                <input type="text" id="originalUrl" name="originalUrl" required>
+            </div>
+            <div>
+                <label for="customAlias">Özel Kısa Kod (İsteğe Bağlı):</label>
+                <input type="text" id="customAlias" name="customAlias">
+            </div>
+            <button type="submit">URL Kısalt</button>
+        </form>
+
+        <div id="resultArea" class="result hidden">
+            <p><strong>Orijinal URL:</strong> <span id="originalUrlResult"></span></p>
+            <p><strong>Kısaltılmış URL:</strong> <span id="shortenedUrlResult"></span></p>
+            <p><strong>Kısa Kod:</strong> <span id="aliasResult"></span></p>
+        </div>
+
+        <div id="errorArea" class="error hidden"></div>
+    </div>
+
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Formun varsayılan gönderimini engelle
+
+            const originalUrl = document.getElementById('originalUrl').value;
+            const customAlias = document.getElementById('customAlias').value;
+            const resultArea = document.getElementById('resultArea');
+            const errorArea = document.getElementById('errorArea');
+
+            // Önceki sonuçları ve hataları temizle
+            resultArea.classList.add('hidden');
+            errorArea.classList.add('hidden');
+
+            try {
+                // Bu, bir backend API'sine POST isteği yapar. 
+                // Gerçek bir uygulama için bir backend (Node.js, Python, vb.) gereklidir.
+                // Bu örnekte, sadece frontend'in nasıl çalıştığını gösteriyoruz.
+                // Varsayımsal bir /shorten endpoint'i kullanıyoruz.
+                const response = await fetch('/shorten', { // '/shorten' yerine gerçek API endpoint'inizi kullanın
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ originalUrl, customAlias }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Hata durumunda
+                    errorArea.textContent = data.error || 'Bilinmeyen bir hata oluştu.';
+                    errorArea.classList.remove('hidden');
+                } else {
+                    // Başarılı durumda
+                    document.getElementById('originalUrlResult').textContent = data.originalUrl;
+                    document.getElementById('shortenedUrlResult').textContent = window.location.origin + '/' + data.alias; // Varsayımsal kısaltılmış URL
+                    document.getElementById('aliasResult').textContent = data.alias;
+                    resultArea.classList.remove('hidden');
+                }
+            } catch (error) {
+                // Ağ hatası veya diğer beklenmedik hatalar
+                errorArea.textContent = 'İstek gönderilirken bir hata oluştu: ' + error.message;
+                errorArea.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
